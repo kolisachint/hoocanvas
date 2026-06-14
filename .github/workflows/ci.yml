@@ -22,7 +22,10 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+          npm rebuild
 
       - name: Check code quality
         run: npm run check
@@ -38,7 +41,10 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+          npm rebuild
 
       - name: Build
         run: npm run build
