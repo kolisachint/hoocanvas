@@ -20,15 +20,6 @@ const STATUS_BG: Record<TaskStatus, string> = {
 	retrying: "rgba(214, 168, 79, 0.12)",
 };
 
-const STATUS_DOT_CLASS: Record<TaskStatus, string> = {
-	idle: "dot-off",
-	pending: "dot-off",
-	running: "dot-busy",
-	done: "dot-ok",
-	error: "dot-err",
-	retrying: "dot-busy",
-};
-
 // ── Layout constants ──
 const NODE_W = 172;
 const NODE_H = 60;
@@ -128,7 +119,17 @@ function DagNodeCard({
 	const busy = node.status === "running";
 
 	return (
-		<g onClick={onClick} style={{ cursor: "pointer" }} className="card-in">
+		// biome-ignore lint/a11y/useSemanticElements: SVG <g> cannot be <button>
+		<g
+			onClick={onClick}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") onClick();
+			}}
+			role="button"
+			tabIndex={0}
+			style={{ cursor: "pointer" }}
+			className="card-in"
+		>
 			{/* glow ring for running */}
 			{busy && (
 				<rect
@@ -181,9 +182,7 @@ function DagNodeCard({
 			</text>
 			{/* status dot — 6px per kit spec */}
 			<circle cx={position.x + NODE_W - 16} cy={position.y + 16} r={3} fill={color} />
-			{busy && (
-				<circle cx={position.x + NODE_W - 16} cy={position.y + 16} r={3} fill={color} className="presence" />
-			)}
+			{busy && <circle cx={position.x + NODE_W - 16} cy={position.y + 16} r={3} fill={color} className="presence" />}
 			{/* gate badge */}
 			{node.gate && (
 				<rect
@@ -264,12 +263,8 @@ function TaskDetail({ node, runInfo }: { node: DagNode; runInfo: RunInfo }) {
 						{node.retries}
 					</div>
 				)}
-				{node.gate && (
-					<div style={{ color: "#D6A84F" }}>⚠ approval gate</div>
-				)}
-				{node.advisor && (
-					<div style={{ color: "var(--cyan)" }}>◆ advisor</div>
-				)}
+				{node.gate && <div style={{ color: "#D6A84F" }}>⚠ approval gate</div>}
+				{node.advisor && <div style={{ color: "var(--cyan)" }}>◆ advisor</div>}
 			</div>
 
 			{/* goal */}
@@ -323,16 +318,9 @@ function TaskDetail({ node, runInfo }: { node: DagNode; runInfo: RunInfo }) {
 										.join("") ?? "";
 								const tools = msg.content?.filter((c: any) => c.type === "toolCall") ?? [];
 								return (
-									<div
-										key={i}
-										className="pl-3 py-1"
-										style={{ borderLeft: "1px solid var(--line)" }}
-									>
+									<div key={i} className="pl-3 py-1" style={{ borderLeft: "1px solid var(--line)" }}>
 										{thinking && (
-											<div
-												className="text-[10px] italic mb-1"
-												style={{ color: "var(--text-faint)" }}
-											>
+											<div className="text-[10px] italic mb-1" style={{ color: "var(--text-faint)" }}>
 												{thinking.slice(0, 180)}
 												{thinking.length > 180 ? "…" : ""}
 											</div>
@@ -369,13 +357,8 @@ function TaskDetail({ node, runInfo }: { node: DagNode; runInfo: RunInfo }) {
 							}
 							if (msg.role === "toolResult") {
 								return (
-									<div
-										key={i}
-										className="text-[10px] pl-3"
-										style={{ color: "var(--text-faint)" }}
-									>
-										← {msg.toolName}:{" "}
-										{(msg.content?.[0]?.text ?? "").slice(0, 120)}
+									<div key={i} className="text-[10px] pl-3" style={{ color: "var(--text-faint)" }}>
+										← {msg.toolName}: {(msg.content?.[0]?.text ?? "").slice(0, 120)}
 									</div>
 								);
 							}
@@ -413,12 +396,7 @@ export function DagViewer({ runInfo }: { runInfo: RunInfo }) {
 
 	const selectedNode = selectedId ? runInfo.dag[selectedId] : null;
 
-	const statusColor =
-		runInfo.status === "done"
-			? "#6FA98A"
-			: runInfo.status === "error"
-				? "#D9788A"
-				: "var(--cyan)";
+	const statusColor = runInfo.status === "done" ? "#6FA98A" : runInfo.status === "error" ? "#D9788A" : "var(--cyan)";
 
 	return (
 		<div
@@ -453,7 +431,7 @@ export function DagViewer({ runInfo }: { runInfo: RunInfo }) {
 
 			{/* DAG canvas */}
 			<div className="overflow-auto p-4" style={{ background: "var(--bg)" }}>
-				<svg width={svgW} height={svgH} style={{ minWidth: "100%" }}>
+				<svg width={svgW} height={svgH} style={{ minWidth: "100%" }} role="img" aria-label="Task dependency graph">
 					{/* edges */}
 					{Object.entries(runInfo.dag).map(([id, node]) => {
 						const toPos = positions.get(id);
