@@ -103,3 +103,50 @@ export interface AgentState {
 }
 
 export type ConnectionStatus = "connecting" | "live" | "reconnecting";
+
+// ── DAG / Session Replay Types ──
+
+export type TaskStatus = "idle" | "pending" | "running" | "done" | "error" | "retrying";
+
+export interface DagNode {
+	id: string;
+	role: string;
+	deps: string[];
+	status: TaskStatus;
+	retries?: number;
+	advisor?: boolean;
+	gate?: boolean;
+	results?: unknown[];
+}
+
+export interface DagState {
+	[taskId: string]: DagNode;
+}
+
+export interface SessionRunConfig {
+	runId: string;
+	tasks: Array<{
+		id: string;
+		role: string;
+		prompt?: string;
+		deps?: string[];
+		retries?: number;
+	}>;
+	goal?: string;
+}
+
+export interface SessionEntry {
+	type: string;
+	customType?: string;
+	data?: Record<string, unknown>;
+	timestamp?: string;
+}
+
+export interface RunInfo {
+	runId: string;
+	goal?: string;
+	dag: DagState;
+	status: "running" | "done" | "error";
+	startedAt?: number;
+	endedAt?: number;
+}

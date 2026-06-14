@@ -9,20 +9,23 @@ let attempt = 0;
 let stopped = false;
 
 const MAX_BACKOFF_MS = 30_000;
+let currentRunId: string | undefined;
 
 /**
  * Connect to the HooTeams SSE stream. Native EventSource retries on its own,
  * but gives up on some failures (e.g. server down at page load), so we manage
  * reconnection ourselves with exponential backoff capped at 30s.
  */
-export function connect(host: string = HOOTEAMS_HOST): void {
+export function connect(host: string = HOOTEAMS_HOST, runId?: string): void {
 	stopped = false;
-	open(host);
+	currentRunId = runId;
+	open(host, runId);
 }
 
-function open(host: string): void {
+function open(host: string, runId?: string): void {
 	source?.close();
-	source = new EventSource(`${host}/events`);
+	const url = runId ? `${host}/events?runId=${runId}` : `${host}/events`;
+	source = new EventSource(url);
 
 	source.onopen = () => {
 		attempt = 0;
@@ -44,7 +47,7 @@ function open(host: string): void {
 		const backoff = Math.min(1000 * 2 ** attempt, MAX_BACKOFF_MS);
 		attempt += 1;
 		clearTimeout(reconnectTimer);
-		reconnectTimer = setTimeout(() => open(host), backoff);
+		reconnectTimer = setTimeout(() => open(host, currentRunId), backoff);
 	};
 }
 
