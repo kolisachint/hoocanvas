@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { DagViewer } from "./components/DagViewer";
 import { TeamBoard } from "./components/TeamBoard";
-import type { RunInfo } from "./lib/types";
+import { fetchSession } from "./lib/session";
 import { useStore } from "./lib/store";
 import { connect, disconnect, HOOTEAMS_HOST } from "./lib/stream";
-import { fetchSession } from "./lib/session";
+import type { RunInfo } from "./lib/types";
 
 function ConnectionBadge() {
 	const connection = useStore((state) => state.connection);
@@ -48,9 +48,7 @@ function RunHeader({ runInfo }: { runInfo: RunInfo }) {
 				</span>
 				<span className="ml-auto text-[11px]" style={{ color: "var(--text-faint)" }}>
 					{doneCount}/{taskCount} done
-					{errorCount > 0 && (
-						<span style={{ color: "#D9788A" }}> · {errorCount} error</span>
-					)}
+					{errorCount > 0 && <span style={{ color: "#D9788A" }}> · {errorCount} error</span>}
 				</span>
 			</div>
 			{runInfo.goal && (
@@ -66,7 +64,6 @@ export function App() {
 	const [runInfo, setRunInfo] = useState<RunInfo | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const agents = useStore((state) => state.agents);
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -112,11 +109,7 @@ export function App() {
 						team mission control
 					</span>
 					<div className="ml-auto">
-						<a
-							href="/"
-							className="text-[11px] hover:underline"
-							style={{ color: "var(--text-faint)" }}
-						>
+						<a href="/" className="text-[11px] hover:underline" style={{ color: "var(--text-faint)" }}>
 							← live stream
 						</a>
 					</div>
